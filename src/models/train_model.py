@@ -7,12 +7,6 @@ from torchmetrics import Accuracy, Precision, Recall, F1Score
 import time
 import mlflow
 
-OPTIMIZERS = {
-    "ADAM" : optim.Adam,
-    "SGD" : optim.SGD
-}
-
-
 def train_model(model, criterion, optimizer, dataloaders, num_epochs=10):
     since = time.time()
     train_batches = len(dataloaders["train"])
@@ -48,12 +42,6 @@ def train_model(model, criterion, optimizer, dataloaders, num_epochs=10):
             # Probably explicit reseting is not neccessary
             metric.reset()
         model.eval()
-        metrics_val = [
-            Accuracy(task = "binary").to("cuda"),
-            Precision(task = "binary").to("cuda"),
-            Recall(task = "binary").to("cuda"),
-            F1Score(task = "binary").to("cuda")
-        ]
         print()
         for i, data in enumerate(dataloaders["val"]):
             if i % 100 == 0:
@@ -65,7 +53,7 @@ def train_model(model, criterion, optimizer, dataloaders, num_epochs=10):
             outputs = model(inputs)
             loss = criterion(outputs, labels.float())
             loss_val += loss.item()
-            for metric in metrics_val:
+            for metric in metrics.values():
                 metric.update(outputs, labels)
         mlflow.log_metric(f"val_loss", loss_val, step=epoch)
         for metric_name, metric in metrics.items():

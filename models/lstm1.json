@@ -8,12 +8,11 @@
         "dropout" : 0.2
     },
     "linear" : {
-        "num_layers" : 3,
+        "num_layers" : 2,
         "include_bn" : true,
         "layers" : [
             512,
-            256,
-            128
+            256
         ]
     },
     "out_classes" : 2
