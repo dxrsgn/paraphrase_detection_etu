@@ -44,8 +44,7 @@ def train_model(model, criterion, optimizer, dataloaders, num_epochs=10):
         model.eval()
         print()
         for i, data in enumerate(dataloaders["val"]):
-            if i % 100 == 0:
-                print("\rValidation batch {}/{}".format(i, val_batches), end='', flush=True)
+            print("\rValidation batch {}/{}".format(i, val_batches), end='', flush=True)
             inputs = data["input_ids"]
             labels = data["labels"]
             inputs, labels = inputs.cuda(), labels.cuda()

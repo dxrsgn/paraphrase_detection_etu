@@ -23,7 +23,7 @@ def eval_model(model, dataloaders):
         labels = data["labels"]
         inputs, labels = inputs.cuda(), labels.cuda()
         outputs = model(inputs)
-        for metric in metrics:
+        for metric in metrics.values():
             metric.update(outputs, labels)
     for metric_name, metric in metrics.items():
         mlflow.log_metric(f"test_{metric_name}", metric.compute().item())
