@@ -1,0 +1,20 @@
+{
+    "type" : "lstm",
+    "vocab_size" : 128000,
+    "embedding_dim" : 80,
+    "lstm" : {
+        "hidden_size" : 100,
+        "num_layers" : 2,
+        "dropout" : 0.5
+    },
+    "linear" : {
+        "num_layers" : 2,
+        "include_bn" : false,
+        "layers" : [
+            128,
+            64
+        ],
+        "dropout" : 0.2
+    },
+    "out_classes" : 2
+}

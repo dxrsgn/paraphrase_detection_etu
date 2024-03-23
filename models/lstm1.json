@@ -13,7 +13,8 @@
         "layers" : [
             512,
             256
-        ]
+        ],
+        "dropout" : false
     },
     "out_classes" : 2
 }

@@ -14,7 +14,8 @@
             512,
             256,
             128
-        ]
+        ],
+        "dropout" : false
     },
     "out_classes" : 2
 }

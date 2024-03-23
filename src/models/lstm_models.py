@@ -65,6 +65,8 @@ def build_SimpleBiLSTM(config: dict):
         ]
         if linear_params["include_bn"]:
             layer.append(nn.BatchNorm1d(out_neurons))
+        if linear_params["dropout"] != False:
+            layer.append(nn.Dropout(linear_params["dropout"]))
         in_neurons = out_neurons
         linears.extend(layer)
     final_layer_out = config["out_classes"] if config["out_classes"] > 2 else 1
