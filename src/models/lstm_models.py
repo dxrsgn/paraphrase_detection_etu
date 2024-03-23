@@ -1,8 +1,15 @@
 import torch
 import torch.nn as nn
 
+
 class ResidualBlock(nn.Module):
-    def __init__(self, in_features, interim_features, out_features, include_bn) -> None:
+    def __init__(
+        self,
+        in_features: int,
+        interim_features: int,
+        out_features: int,
+        include_bn: bool
+    ) -> None:
         super().__init__()
         self.include_bn = include_bn
         self.lin0 = nn.Linear(in_features, interim_features)
@@ -13,8 +20,8 @@ class ResidualBlock(nn.Module):
             self.bn1 = nn.BatchNorm1d(in_features)
         self.lin_projection = nn.Linear(in_features, out_features)
         self.act = nn.ReLU()
-    
-    def forward(self, x):
+        
+    def forward(self, x: torch.Tensor):
         out = self.lin0(x)
         out = self.act(out)
         if self.include_bn:
@@ -26,23 +33,30 @@ class ResidualBlock(nn.Module):
         # Project x to out_features dim
         projection = self.lin_projection(x)
         return self.act(out + projection)
-        
+
+
 class LSTMModel(nn.Module):
-    def __init__(self, embedding, lstm, linear) -> None:
+    def __init__(
+        self,
+        embedding: int,
+        lstm: nn.LSTM,
+        linear: list[nn.Module]
+    ) -> None:
         super().__init__()
         self.embedding = embedding
         self.lstm = lstm
         self.linear = nn.Sequential(*linear)
-    
-    def forward(self, x):
+
+    def forward(self, x: torch.Tensor):
         x=x.squeeze(1)
         embedded = self.embedding(x)
         _, (h_n, _) = self.lstm(embedded)
         hidden = torch.cat((h_n[-2,:,:], h_n[-1,:,:]), dim = 1)
         out = self.linear(hidden)
         return out
-        
-def build_SimpleBiLSTM(config: dict):
+
+
+def build_bi_lstm(config: dict):
     lstm_params = config["lstm"]
     linear_params = config["linear"]
     embedding = nn.Embedding(config["vocab_size"], config["embedding_dim"])
@@ -65,7 +79,7 @@ def build_SimpleBiLSTM(config: dict):
         ]
         if linear_params["include_bn"]:
             layer.append(nn.BatchNorm1d(out_neurons))
-        if linear_params["dropout"] != False:
+        if linear_params["dropout"] is not False:
             layer.append(nn.Dropout(linear_params["dropout"]))
         in_neurons = out_neurons
         linears.extend(layer)
