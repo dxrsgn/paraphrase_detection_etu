@@ -53,7 +53,11 @@ def train_model(model, criterion, optimizer, dataloaders, modeltype, num_epochs=
             labels = data["labels"]
             inputs, labels = inputs.cuda(), labels.cuda()
             optimizer.zero_grad()
-            outputs = model(inputs)
+            if modeltype == "transformer":
+                mask = data["attention_mask"].cuda()
+                outputs = model(inputs, ~mask)
+            else:
+                outputs = model(inputs)
             loss = criterion(outputs, labels.float())
             loss_val += loss.item()
             for metric in metrics.values():
