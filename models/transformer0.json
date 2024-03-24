@@ -3,9 +3,8 @@
     "vocab_size" : 128000,
     "embedding_dim" : 80,
     "maxlen" : 128,
-    "nhead" : 2,
+    "nhead" : 4,
     "d_hid" : 200,
-    "n_layers" : 200,
     "dropout" : 0.5,
     "out_classes" : 2
 }

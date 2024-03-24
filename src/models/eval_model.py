@@ -8,7 +8,7 @@ import time
 import mlflow
 
 
-def eval_model(model, dataloaders):
+def eval_model(model, dataloaders, modeltype):
     model.eval()
     since = time.time()
     metrics = {
@@ -22,7 +22,11 @@ def eval_model(model, dataloaders):
         inputs = data["input_ids"]
         labels = data["labels"]
         inputs, labels = inputs.cuda(), labels.cuda()
-        outputs = model(inputs)
+        if modeltype == "transformer":
+            mask = data["attention_mask"].cuda()
+            outputs = model(inputs, ~mask)
+        else:
+            outputs = model(inputs)
         for metric in metrics.values():
             metric.update(outputs, labels)
     for metric_name, metric in metrics.items():

@@ -3,7 +3,7 @@ import os
 
 import torch
 from torch import nn, Tensor
-from torch.nn import TransformerEncoder, TransformerEncoderLayer
+from torch.nn import TransformerEncoderLayer
 
 class PositionalEncoding(nn.Module):
     def __init__(
@@ -39,26 +39,26 @@ class ClasificationTransformerModel(nn.Module):
     ):
         super().__init__()
         self.pos_encoder = PositionalEncoding(embedding_dim, dropout, maxlen)
-        self.transformer_encoder_layer = TransformerEncoderLayer(embedding_dim, nhead, d_hid, dropout)
+        self.transformer_encoder_layer = TransformerEncoderLayer(embedding_dim, nhead, d_hid, dropout, batch_first = True)
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.d_model = embedding_dim
         self.maxlen = maxlen
-        self.linear0 = nn.Linear(embedding_dim, 64)
-        self.linear1 = nn.Linear(64, 1)
-        self.linear2 = nn.Linear(self.maxlen, 32)
-        self.linear3 = nn.Linear(32, 1)
+        self.linear0 = nn.Linear(embedding_dim, 256)
+        self.linear1 = nn.Linear(256, 128)
+        self.linear2 = nn.Linear(128, 1)
         self.activation = nn.ReLU()
         
-    def forward(self, src: Tensor) -> Tensor:
+    def forward(self, src: Tensor, mask: Tensor = None) -> Tensor:
         src = self.embedding(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
-        output = self.transformer_encoder_layer(src)
-        output = self.activation(self.linear0(output))
+        encoding = self.transformer_encoder_layer(src, src_key_padding_mask = ~mask)
+        cls_token = encoding[:, 0, :].view(src.shape[0], -1)
+        output = self.activation(self.linear0(cls_token))
         output = self.activation(self.linear1(output))
-        output = output.view(-1, self.maxlen)
-        output = self.activation(self.linear2(output))
-        output = self.linear3(output)
+        output = self.linear2(output)
         return output
     
 def build_transfomer(config):
+    config.pop('type', None)
+    config.pop('out_classes', None)
     return ClasificationTransformerModel(**config)
