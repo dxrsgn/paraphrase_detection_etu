@@ -30,7 +30,7 @@ def train_model(model, criterion, optimizer, dataloaders, modeltype, num_epochs=
             inputs, labels = inputs.cuda(), labels.cuda()
             if modeltype == "transformer":
                 mask = data["attention_mask"].cuda()
-                outputs = model(inputs, ~mask)
+                outputs = model(inputs, mask)
             else:
                 outputs = model(inputs)
             optimizer.zero_grad()
@@ -55,7 +55,7 @@ def train_model(model, criterion, optimizer, dataloaders, modeltype, num_epochs=
             optimizer.zero_grad()
             if modeltype == "transformer":
                 mask = data["attention_mask"].cuda()
-                outputs = model(inputs, ~mask)
+                outputs = model(inputs, mask)
             else:
                 outputs = model(inputs)
             loss = criterion(outputs, labels.float())
