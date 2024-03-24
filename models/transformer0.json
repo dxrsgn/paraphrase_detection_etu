@@ -4,7 +4,7 @@
     "embedding_dim" : 80,
     "maxlen" : 128,
     "nhead" : 4,
-    "d_hid" : 200,
+    "d_hid" : 150,
     "dropout" : 0.5,
     "out_classes" : 2
 }

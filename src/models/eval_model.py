@@ -24,7 +24,7 @@ def eval_model(model, dataloaders, modeltype):
         inputs, labels = inputs.cuda(), labels.cuda()
         if modeltype == "transformer":
             mask = data["attention_mask"].cuda()
-            outputs = model(inputs, ~mask)
+            outputs = model(inputs, mask)
         else:
             outputs = model(inputs)
         for metric in metrics.values():

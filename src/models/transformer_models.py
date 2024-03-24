@@ -44,6 +44,7 @@ class ClasificationTransformerModel(nn.Module):
         self.d_model = embedding_dim
         self.maxlen = maxlen
         self.linear0 = nn.Linear(embedding_dim, 256)
+        self.dropout = nn.Dropout(0.5)
         self.linear1 = nn.Linear(256, 128)
         self.linear2 = nn.Linear(128, 1)
         self.activation = nn.ReLU()
@@ -53,8 +54,8 @@ class ClasificationTransformerModel(nn.Module):
         src = self.pos_encoder(src)
         encoding = self.transformer_encoder_layer(src, src_key_padding_mask = ~mask)
         cls_token = encoding[:, 0, :].view(src.shape[0], -1)
-        output = self.activation(self.linear0(cls_token))
-        output = self.activation(self.linear1(output))
+        output = self.dropout(self.activation(self.linear0(cls_token)))
+        output = self.dropout(self.activation(self.linear1(output)))
         output = self.linear2(output)
         return output
     
