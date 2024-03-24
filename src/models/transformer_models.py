@@ -1,5 +1,4 @@
 import math
-import os
 
 import torch
 from torch import nn, Tensor
@@ -39,7 +38,13 @@ class ClasificationTransformerModel(nn.Module):
     ):
         super().__init__()
         self.pos_encoder = PositionalEncoding(embedding_dim, dropout, maxlen)
-        self.transformer_encoder_layer = TransformerEncoderLayer(embedding_dim, nhead, d_hid, dropout, batch_first = True)
+        self.transformer_encoder_layer = TransformerEncoderLayer(
+            embedding_dim,
+            nhead,
+            d_hid,
+            dropout,
+            batch_first = True
+        )
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.d_model = embedding_dim
         self.maxlen = maxlen
@@ -58,8 +63,17 @@ class ClasificationTransformerModel(nn.Module):
         output = self.dropout(self.activation(self.linear1(output)))
         output = self.linear2(output)
         return output
-    
-def build_transfomer(config):
+
+
+def build_transfomer(config: dict):
+    """Build transformer model based on config
+
+    Args:
+        config (dict): Model config
+
+    Returns:
+        ClasificationTransformerModel: Builded model
+    """
     config.pop('type', None)
     config.pop('out_classes', None)
     return ClasificationTransformerModel(**config)

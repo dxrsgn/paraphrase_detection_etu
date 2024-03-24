@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-
 class ResidualBlock(nn.Module):
     def __init__(
         self,
@@ -57,6 +56,14 @@ class LSTMModel(nn.Module):
 
 
 def build_bi_lstm(config: dict):
+    """Builds lstm based on config
+
+    Args:
+        config (dict): Model config
+
+    Returns:
+        LSTMModel: Builded model
+    """
     lstm_params = config["lstm"]
     linear_params = config["linear"]
     embedding = nn.Embedding(config["vocab_size"], config["embedding_dim"])

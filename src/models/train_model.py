@@ -1,13 +1,29 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.optim import lr_scheduler
-import numpy as np
+from torch import nn, optim
+from torch.utils.data import DataLoader
 from torchmetrics import Accuracy, Precision, Recall, F1Score
 import time
 import mlflow
 
-def train_model(model, criterion, optimizer, dataloaders, modeltype, num_epochs=10):
+def train_model(model: nn.Module,
+                criterion: nn.Module,
+                optimizer: optim.Optimizer,
+                dataloaders: dict[str, DataLoader],
+                modeltype: str,
+                num_epochs: int = 10
+    ):
+    """Trains model
+
+    Args:
+        model (nn.Module): Model
+        criterion (nn.Module): Loss
+        optimizer (optim.Optimizer): Optimizer
+        dataloaders (dict: [str, Dataloader]): Dict of dataloaders. It should have dataloader for validation and train
+        modeltype (str): Model type (lstm or transformer)
+        num_epochs (int, optional): Number of epochs. Defaults to 10.
+
+    Returns:
+        nn.Module: Trained model
+    """
     since = time.time()
     train_batches = len(dataloaders["train"])
     val_batches = len(dataloaders["val"])
@@ -40,7 +56,7 @@ def train_model(model, criterion, optimizer, dataloaders, modeltype, num_epochs=
             loss_train += loss.item()
             for metric in metrics.values():
                 metric.update(outputs, labels)
-        mlflow.log_metric(f"train_loss", loss_train, step=epoch)
+        mlflow.log_metric("train_loss", loss_train, step=epoch)
         for metric_name, metric in metrics.items():
             mlflow.log_metric(f"train_{metric_name}", metric.compute().item(), step=epoch)
             # Probably explicit reseting is not neccessary
@@ -62,7 +78,7 @@ def train_model(model, criterion, optimizer, dataloaders, modeltype, num_epochs=
             loss_val += loss.item()
             for metric in metrics.values():
                 metric.update(outputs, labels)
-        mlflow.log_metric(f"val_loss", loss_val, step=epoch)
+        mlflow.log_metric("val_loss", loss_val, step=epoch)
         for metric_name, metric in metrics.items():
             mlflow.log_metric(f"val_{metric_name}", metric.compute().item(), step=epoch)
             # Probably explicit reseting is not neccessary
