@@ -17,7 +17,7 @@ def train_model(model: nn.Module,
         model (nn.Module): Model
         criterion (nn.Module): Loss
         optimizer (optim.Optimizer): Optimizer
-        dataloaders (dict: [str, Dataloader]): Dict of dataloaders. It should have dataloader for validation and train
+        dataloaders (dict: [str, Dataloader]): Key - dataset name, value - dataloader        
         modeltype (str): Model type (lstm or transformer)
         num_epochs (int, optional): Number of epochs. Defaults to 10.
 
@@ -28,10 +28,10 @@ def train_model(model: nn.Module,
     train_batches = len(dataloaders["train"])
     val_batches = len(dataloaders["val"])
     metrics = {
-        "Accuracy":  Accuracy(task = "binary").to("cuda"),
-        "Precision": Precision(task = "binary").to("cuda"),
-        "Recall": Recall(task = "binary").to("cuda"),
-        "F1Score": F1Score(task = "binary").to("cuda")
+        "Accuracy":  Accuracy(task = "binary", deivce = "cuda"),
+        "Precision": Precision(task = "binary", deivce = "cuda"),
+        "Recall": Recall(task = "binary", deivce = "cuda"),
+        "F1Score": F1Score(task = "binary", deivce = "cuda")
     }
     for epoch in range(num_epochs):
         print("Epoch {}/{}".format(epoch, num_epochs))

@@ -1,5 +1,4 @@
 import math
-
 import torch
 from torch import nn, Tensor
 from torch.nn import TransformerEncoderLayer
@@ -26,7 +25,18 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 class ClasificationTransformerModel(nn.Module):
+    """Simple classfication transformer
 
+    It consist of one encoder layer and feedforward network for classification
+    by first [CLS] token
+
+    Attributes:
+        pos_encoder: Module for calculating pos embeddings
+        transformer_encoder_layer: Encoder layer
+        embedding: Embedding layer
+        d_model: Embedding dimensions
+        linears: Feedforward classification model
+    """
     def __init__(
         self,
         vocab_size: int,
@@ -34,7 +44,8 @@ class ClasificationTransformerModel(nn.Module):
         nhead: int,
         d_hid: int,
         maxlen: int,
-        dropout: float = 0.5
+        dropout: float,
+        linears: list[nn.Module],
     ):
         super().__init__()
         self.pos_encoder = PositionalEncoding(embedding_dim, dropout, maxlen)
@@ -47,21 +58,14 @@ class ClasificationTransformerModel(nn.Module):
         )
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.d_model = embedding_dim
-        self.maxlen = maxlen
-        self.linear0 = nn.Linear(embedding_dim, 256)
-        self.dropout = nn.Dropout(0.5)
-        self.linear1 = nn.Linear(256, 128)
-        self.linear2 = nn.Linear(128, 1)
-        self.activation = nn.ReLU()
-        
+        self.linears = nn.Sequential(*linears)
+
     def forward(self, src: Tensor, mask: Tensor = None) -> Tensor:
         src = self.embedding(src) * math.sqrt(self.d_model)
         src = self.pos_encoder(src)
         encoding = self.transformer_encoder_layer(src, src_key_padding_mask = ~mask)
         cls_token = encoding[:, 0, :].view(src.shape[0], -1)
-        output = self.dropout(self.activation(self.linear0(cls_token)))
-        output = self.dropout(self.activation(self.linear1(output)))
-        output = self.linear2(output)
+        output = self.linears(cls_token)
         return output
 
 
@@ -74,6 +78,23 @@ def build_transfomer(config: dict):
     Returns:
         ClasificationTransformerModel: Builded model
     """
-    config.pop('type', None)
-    config.pop('out_classes', None)
-    return ClasificationTransformerModel(**config)
+    transformer_params = config["transformer"]
+    linear_params = config["linear"]
+    # Build feed forward classificator
+    linears = []
+    in_neurons = transformer_params["embedding_dim"]
+    for i in range(linear_params["num_layers"]):
+        out_neurons = linear_params["layers"][i]
+        layer = [
+            nn.Linear(in_features=in_neurons, out_features=out_neurons)
+        ]
+        if linear_params["include_bn"]:
+            layer.append(nn.BatchNorm1d(out_neurons))
+        layer.append(nn.ReLU())
+        if linear_params["dropout"] is not False:
+            layer.append(nn.Dropout(linear_params["dropout"]))
+        in_neurons = out_neurons
+        linears.extend(layer)
+    final_layer_out = config["out_classes"] if config["out_classes"] > 2 else 1
+    linears.append(nn.Linear(out_neurons, final_layer_out))
+    return ClasificationTransformerModel(**transformer_params, linears = linears)

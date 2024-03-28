@@ -2,6 +2,15 @@ import torch
 import torch.nn as nn
 
 class ResidualBlock(nn.Module):
+    """Residual layer block
+
+    Inspired by ResNet paper
+
+    Attributes:
+       lin0 - First linear layer
+       lin1 - Second linear layer
+       lin_projection - Linear layer for projecting X on lin1(lin0(X)) dimension
+    """
     def __init__(
         self,
         in_features: int,
@@ -35,6 +44,15 @@ class ResidualBlock(nn.Module):
 
 
 class LSTMModel(nn.Module):
+    """Simple BiLSTM model
+
+    It consists of bidirectional LSTM and feedfoward nn for classification
+
+    Attributes:
+       embedding: Embedding layer
+       lstm: LSTM Layer
+       linear: Feedorward network for classification 
+    """
     def __init__(
         self,
         embedding: int,
@@ -81,11 +99,11 @@ def build_bi_lstm(config: dict):
     for i in range(linear_params["num_layers"]):
         out_neurons = linear_params["layers"][i]
         layer = [
-            nn.Linear(in_features=in_neurons, out_features=out_neurons),
-            nn.ReLU()
+            nn.Linear(in_features=in_neurons, out_features=out_neurons)
         ]
         if linear_params["include_bn"]:
             layer.append(nn.BatchNorm1d(out_neurons))
+        layer.append(nn.ReLU())
         if linear_params["dropout"] is not False:
             layer.append(nn.Dropout(linear_params["dropout"]))
         in_neurons = out_neurons

@@ -1,21 +1,29 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import DataLoader
 from torch.optim import lr_scheduler
 import numpy as np
 from torchmetrics import Accuracy, Precision, Recall, F1Score
 import time
 import mlflow
 
+def eval_model(model: nn.Module, dataloaders: list[DataLoader], modeltype: str):
+    """Evaluate model on test set. Metrics: Accuracy, Precision, Recall, F1Score
 
-def eval_model(model, dataloaders, modeltype):
+    Args:
+        model (nn.Module): Model
+        dataloaders (list[DataLoader]): Dataloaders 
+        modeltype (str): Model type ("lstm", "transformer") 
+    """
+
     model.eval()
     since = time.time()
     metrics = {
-        "Accuracy":  Accuracy(task = "binary").to("cuda"),
-        "Precision": Precision(task = "binary").to("cuda"),
-        "Recall": Recall(task = "binary").to("cuda"),
-        "F1Score": F1Score(task = "binary").to("cuda")
+        "Accuracy":  Accuracy(task = "binary", deivce = "cuda"),
+        "Precision": Precision(task = "binary", deivce = "cuda"),
+        "Recall": Recall(task = "binary", deivce = "cuda"),
+        "F1Score": F1Score(task = "binary", deivce = "cuda")
     }
     print()
     for i, data in enumerate(dataloaders["test"]):
