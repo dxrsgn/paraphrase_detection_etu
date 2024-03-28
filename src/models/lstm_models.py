@@ -111,3 +111,41 @@ def build_bi_lstm(config: dict):
     final_layer_out = config["out_classes"] if config["out_classes"] > 2 else 1
     linears.append(nn.Linear(out_neurons, final_layer_out))
     return LSTMModel(embedding, lstm, linears)
+
+def build_res_bi_lstm(config: dict):
+    """Builds lstm with residual classifier based on config
+
+    Args:
+        config (dict): Model config
+
+    Returns:
+        LSTMModel: Builded model
+    """
+    lstm_params = config["lstm"]
+    linear_params = config["linear"]
+    embedding = nn.Embedding(config["vocab_size"], config["embedding_dim"])
+    lstm = nn.LSTM(
+        input_size=config["embedding_dim"],
+        hidden_size=lstm_params["hidden_size"],
+        num_layers=lstm_params["num_layers"],
+        batch_first=True,
+        dropout=lstm_params["dropout"],
+        bidirectional=True
+    )
+    linears = []
+    # Multypling by 2 for forward and backward direction
+    in_neurons = lstm_params["hidden_size"] * 2
+    for i in range(linear_params["num_layers"]):
+        out_neurons = linear_params["layers"][i]
+        linears.append(
+            ResidualBlock(
+                in_neurons,
+                out_neurons,
+                out_neurons,
+                linear_params["include_bn"]
+            )
+        )
+        in_neurons = out_neurons
+    final_layer_out = config["out_classes"] if config["out_classes"] > 2 else 1
+    linears.append(nn.Linear(out_neurons, final_layer_out))
+    return LSTMModel(embedding, lstm, linears)
